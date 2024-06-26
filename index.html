@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Define o conjunto de caracteres UTF-8 para suportar todos os caracteres especiais -->
+    <meta charset="UTF-8">
+
+    <!-- Configura a largura da página para ser igual à largura do dispositivo inicialmente e ajustável -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Importa um arquivo de estilo personalizado chamado index.css -->
+    <link rel="stylesheet" type="text/css" href="index.css">
+
+    <!-- Define o título da página como "ADM.Gerenciamento" -->
+    <title>ADM.Gerenciamento</title>
+
+    <!-- Importa o framework Bootstrap versão 4.5.2 para estilização e layout responsivo -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    
+    <style>
+        /* Define o espaçamento inferior dos grupos de formulários */
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        /* Define o espaçamento superior do contêiner do formulário */
+        .form-container {
+            margin-top: 20px;
+        }
+
+        /* Estilo para o título dos contêineres */
+        .container-title {
+            background-color: white;
+            border: 3px solid black;
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        /* Estilo para a tabela de histórico */
+        .history-table {
+            background-color: white;
+            border: 3px solid black;
+            border-radius: 10px;
+            margin-top: 20px;
+            padding: 10px;
+        }
+
+        /* Estilo para grupos de formulários dentro dos contêineres */
+        .form-group {
+            background-color: white;
+            border: 3px solid black;
+            border-radius: 15px;
+            padding: 10px;
+            text-align: center; 
+            font-size: 18px;
+            margin: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Título principal do sistema -->
+    <div class="container1 mx-auto">
+        <h1>Sistema de Gerenciamento</h1>
+    </div>
+
+    <!-- Subtítulo para vagas de estacionamento -->
+    <div class="container2 mx-auto">
+        <h2>Vagas de Estacionamento</h2>
+    </div>
+  
+    <div class="container">
+        <div class="row form-container">
+            <!-- Coluna para vagas livres -->
+            <div class="col-md-6">
+                <div class="container-title">
+                    <h3>Vagas Livres</h3>
+                </div>
+                <form id="free-spots-form">
+                    <div class="form-group">
+                        <label for="free-spots-select">Selecione uma vaga livre:</label>
+                        <select class="form-control" id="free-spots-select">
+                            <option value="Vaga 1">Vaga 1</option>
+                            <option value="Vaga 2">Vaga 2</option>
+                            <option value="Vaga 3">Vaga 3</option>
+                            <option value="Vaga 4">Vaga 4</option>
+                            <option value="Vaga 5">Vaga 5</option>
+                            <option value="Vaga 6">Vaga 6</option>
+                            <option value="Vaga 7">Vaga 7</option>
+                            <option value="Vaga 8">Vaga 8</option>
+                            <option value="Vaga 9">Vaga 9</option>
+                            <option value="Vaga 10">Vaga 10</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="addOccupiedSpot()">Adicionar Vaga</button>
+                </form>
+            </div>
+            
+            <!-- Coluna para vagas ocupadas -->
+            <div class="col-md-6">
+                <div class="container-title">
+                    <h3>Vagas Ocupadas</h3>
+                </div>
+                <ul class="list-group" id="occupied-spots-list"></ul>
+                <div class="form-group">
+                    <label for="occupied-spots-select">Selecione uma vaga ocupada para pagar:</label>
+                    <select class="form-control" id="occupied-spots-select"></select>
+                </div>
+                <button type="button" class="btn btn-success" onclick="payForSpot()">Pagar com Débito</button>
+            </div>
+        </div>
+        
+        <!-- Seção de histórico de vagas -->
+        <div class="row">
+            <div class="col-md-12">
+                <div class="history-table">
+                    <h3>Histórico de Vagas</h3>
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Vaga</th>
+                                <th>Tempo de Permanência</th>
+                                <th>Custo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const parkingHistory = [];  // Array para armazenar o histórico de vagas
+
+    function addOccupiedSpot() {
+        const freeSpotsSelect = document.getElementById('free-spots-select');
+        const occupiedSpotsList = document.getElementById('occupied-spots-list');
+        const occupiedSpotsSelect = document.getElementById('occupied-spots-select');
+
+        // Pega a vaga selecionada
+        const selectedSpot = freeSpotsSelect.value;
+
+        // Cria um item de lista para a vaga ocupada
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+        listItem.textContent = selectedSpot;
+
+        // Cria um span para mostrar o custo
+        const costSpan = document.createElement('span');
+        costSpan.className = 'badge badge-primary badge-pill ml-2';
+        costSpan.textContent = 'R$ 0,00';
+        listItem.appendChild(costSpan);
+
+        // Cria um botão de pagamento
+        const payButton = document.createElement('button');
+        payButton.className = 'btn btn-success btn-sm ml-2';
+        payButton.textContent = 'Pagar com Dinheiro';
+        payButton.style.display = 'none'; // Inicialmente escondido
+
+        // Cria um botão de remoção
+        const removeButton = document.createElement('button');
+        removeButton.className = 'btn btn-danger btn-sm ml-2';
+        removeButton.textContent = 'Remover';
+        removeButton.style.display = 'none'; // Inicialmente escondido
+
+        // Define a ação do botão de remoção
+        removeButton.onclick = function() {
+            removeOccupiedSpot(listItem, selectedSpot, totalCost, secondsCount);
+        };
+
+        // Adiciona os botões ao item da lista
+        listItem.appendChild(payButton);
+        listItem.appendChild(removeButton);
+        occupiedSpotsList.appendChild(listItem);
+
+        // Adiciona a vaga ao seletor de vagas ocupadas
+        const option = document.createElement('option');
+        option.value = selectedSpot;
+        option.textContent = selectedSpot;
+        occupiedSpotsSelect.appendChild(option);
+
+        // Remove a vaga do seletor de vagas livres
+        freeSpotsSelect.remove(freeSpotsSelect.selectedIndex);
+
+        // Inicia o contador de custo
+        let totalCost = 0;
+        let secondsCount = 0;
+        const intervalId = setInterval(() => {
+            secondsCount++;
+            if (secondsCount % 60 === 0) {
+                totalCost += 0.20;
+            } else {
+                totalCost += 0.03;
+            }
+            costSpan.textContent = `R$ ${totalCost.toFixed(2)}`;
+        }, 2000);
+
+        // Mostra o botão de pagar após 1 segundo
+        setTimeout(() => {
+            payButton.style.display = 'inline-block';
+            payButton.onclick = function() {
+                clearInterval(intervalId);
+                payButton.style.display = 'none';
+                removeButton.style.display = 'inline-block';
+            };
+        }, 1000);
+    }
+
+    function removeOccupiedSpot(listItem, spotValue, totalCost, secondsCount) {
+        const freeSpotsSelect = document.getElementById('free-spots-select');
+        const occupiedSpotsSelect = document.getElementById('occupied-spots-select');
+
+        // Adiciona a vaga de volta ao seletor de vagas livres
+        const option = document.createElement('option');
+        option.value = spotValue;
+        option.textContent = spotValue;
+        freeSpotsSelect.appendChild(option);
+
+        // Remove a vaga da lista de vagas ocupadas
+        listItem.remove();
+
+        // Remove a vaga do seletor de vagas ocupadas
+        const options = occupiedSpotsSelect.options;
+        for (let i = 0; i < options.length; i++) {
+            if (options[i].value === spotValue) {
+                occupiedSpotsSelect.remove(i);
+                break;
+            }
+        }
+
+        // Adiciona a vaga ao histórico
+        const timeSpent = `${Math.floor(secondsCount / 60)} minutos e ${secondsCount % 60} segundos`;
+        parkingHistory.push({ spot: spotValue, cost: `R$ ${totalCost.toFixed(2)}`, time: timeSpent });
+        updateHistoryTable();
+    }
+
+    function payForSpot() {
+
+       // Obtém o elemento select das vagas ocupadas e o valor selecionado
+        const occupiedSpotsSelect = document.getElementById('occupied-spots-select');
+        const selectedSpot = occupiedSpotsSelect.value;
+
+        // Obtém a lista de itens de vagas ocupadas
+        const occupiedSpotsList = document.getElementById('occupied-spots-list');
+        const listItems = occupiedSpotsList.getElementsByTagName('li');
+
+          // Itera sobre os itens da lista de vagas ocupadas
+        for (let i = 0; i < listItems.length; i++) {
+
+           // Verifica se o texto do item da lista inclui a vaga selecionada
+            if (listItems[i].textContent.includes(selectedSpot)) {
+              // Obtém o primeiro botão (pagar com dinheiro) dentro do item da lista e simula um clique nele
+                const payButton = listItems[i].getElementsByTagName('button')[0];
+                payButton.click();
+                break;
+            }
+        }
+    }
+
+    //Atualiza a tabela de histórico de vagas com os dados armazenados em parkingHistory.
+    //Remove todo o conteúdo anterior da tabela e insere linhas para cada entrada de histórico.
+    function updateHistoryTable() {
+
+        // Obtém o corpo da tabela de histórico
+        const historyTableBody = document.getElementById('history-table-body');
+
+        // Limpa todo o conteúdo atual da tabela
+        historyTableBody.innerHTML = '';
+
+        // Itera sobre cada entrada no histórico de vagas
+        parkingHistory.forEach(entry => {
+
+          // Cria uma nova linha na tabela
+            const row = document.createElement('tr');
+
+            // Cria células para cada coluna na linha
+            const spotCell = document.createElement('td');
+            const timeCell = document.createElement('td');
+            const costCell = document.createElement('td');
+
+            // Define o texto de cada célula com base nos dados da entrada atual
+            spotCell.textContent = entry.spot;
+            timeCell.textContent = entry.time;
+            costCell.textContent = entry.cost;
+
+            // Adiciona as células à linha da tabela
+            row.appendChild(spotCell);
+            row.appendChild(timeCell);
+            row.appendChild(costCell);
+
+            // Adiciona a linha à tabela de histórico
+            historyTableBody.appendChild(row);
+        });
+    }
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+</body>
+</html>
